@@ -1,5 +1,16 @@
 # History files
 .Rhistory
-
-# Example code in package build process
-*-Ex.R
+*~
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+Rplots.pdf
+auto
+tikzMetrics
+figure-*.tex
+HOCKING-*.pdf
+*.RData
+svm_classify
+svm_learn
