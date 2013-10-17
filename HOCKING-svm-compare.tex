@@ -178,7 +178,7 @@ algorithms can be applied to the comparison problem.
 
 Comparison is similar to ranking and classification with a reject
 option (Table~\ref{tab:related}). The classification with reject
-option problem is a version of binary classification where outputs
+option problem is a version of binary classification with outputs
 $y\in\{-1,0,1\}$, where 0 signifies ``rejection'' or ``no guess''
 \cite{reject-option}. There are many algorithms for the supervised
 learning to rank problem \citep{learning-to-rank}, which is similar to
@@ -189,18 +189,16 @@ $y_i\in\{-1,1\}$, where $y_i=1$ means document $x_i'$ is more relevant
 than $x_i$ and $y_i=-1$ means the opposite. The SVMrank algorithm was
 proposed for this problem \cite{ranksvm}, and the algorithm we propose
 here is similar. The difference is that we also consider the case
-where both items/documents are judged to be equally good ($y_i=0$).
-This has been called the ``ranking with ties'' problem
-\cite{rank-with-ties}, proposed a boosting algorithm, and observed
-that modeling ties is more effective when there are more output
-values. A Bayesian model which can be applied to these data is
-TrueSkill \cite{trueskill}, which a generalization of the Elo chess
-rating system.
+where both items/documents are judged to be equally good ($y_i=0$).  A
+boosting algorithm has been proposed for this ``ranking with ties''
+problem \cite{rank-with-ties}, and the authors observed that modeling
+ties is more effective when there are more output values. A Bayesian
+model which can be applied to these data is TrueSkill
+\cite{trueskill}, a generalization of the Elo chess rating system.
 % Neither TrueSkill nor SVMrank
 % can predict ties ($y_i=0$), and \citet{rank-with-ties} did not respond
 % to a request for their code, which is what motivates us to propose a
 % new algorithm.
-
 When the inputs are discrete $x_i,x_i'\in\{1,\dots,k\}$, then the
 problem is known as learning a relation \citep{relations}. In this
 article we consider the case when inputs are continuous
@@ -321,12 +319,12 @@ $r:\RR^p\rightarrow\RR$ and then a comparison function $c:\RR^p\times
 \RR^p\rightarrow\{-1,0,1\}$:
 \begin{equation}
   \label{eq:compare_general}
-  c(x,x')=t_1\big( r(x') - r(x) \big)
+  c(x,x')=t_1\big( r(x') - r(x) \big),
 \end{equation}
 using the threshold
 function $t_1:\RR\rightarrow\{-1,0,1\}$ (\ref{eq:threshold}). 
 In other
-words, any small difference in ranks $r(x')-r(x)\leq 1$ is considered
+words, any small difference in ranks $|r(x')-r(x)|\leq 1$ is considered
 insignificant, and there are two decision boundaries
 $r(x')-r(x)\in\{-1,1\}$.
 
@@ -419,9 +417,10 @@ Intuitively, the SVM QP learns a separator $f(x)=0$ between
 significant difference pairs $\tilde y_i=1$ and insignificant
 difference pairs $\tilde y_i=-1$. However, we want a comparison
 function that predicts $c(x,x')\in\{-1,0,1\}$. So we use the next
-Lemma to construct a ranking function $\hat r(x)= \hat w^\intercal x$
+Lemma to construct a ranking function $r(x)= \hat w^\intercal x$
 that is feasible for the original max margin comparison LP
-(\ref{eq:max-margin-lp}).
+(\ref{eq:max-margin-lp}), and can be used with the comparison function
+(\ref{eq:compare_general}).
 \begin{lemma}
   Let $u\in\RR^p,\beta\in\RR$ be a solution of
   (\ref{eq:max-margin-qp-tilde}). Then $\hat \mu = -1/\beta$
@@ -458,23 +457,24 @@ that is feasible for the original max margin comparison LP
 \nonumber \beta + u^\intercal(x_i'-x_i)y_i \geq 1,\ \forall\ i\in I_1\cup I_{-1}.
 \end{eqnarray}
 By re-writing the constraints of (\ref{eq:max-margin-qp}) in terms of
-$\hat \mu,\hat w$, we recover the same constraints as the max margin
-comparison LP (\ref{eq:max-margin-lp}). Thus $\hat \mu, \hat w$ are
-feasible for (\ref{eq:max-margin-lp}).
+$\hat \mu$ and $\hat w$, we recover the same constraints as the max
+margin comparison LP (\ref{eq:max-margin-lp}). Thus $\hat \mu, \hat w$
+are feasible for (\ref{eq:max-margin-lp}).
 \end{proof}
 
 One may also wonder: are $\hat \mu,\hat w$ optimal for the max margin
 comparison LP? In general, the answer is no, and we give one
 counterexample in the middle panel of
 Figure~\ref{fig:hard-margin}. This is because the LP defines the
-margin in terms of ranking function values, but the QP defines the
-margin in terms of $||u||$, which depends on the scale of the inputs
-$x,x'$. However, when the input variables are scaled in a
-pre-processing step, we have observed that the solutions to the LP and
-QP are equivalent (right panel of Figure~\ref{fig:hard-margin}).
+margin in terms of ranking function values $r(x)=w^\intercal x$, but
+the QP defines the margin in terms of the size of the normal vector
+$||u||$, which depends on the scale of the inputs $x,x'$. However,
+when the input variables are scaled in a pre-processing step, we have
+observed that the solutions to the LP and QP are equivalent (right
+panel of Figure~\ref{fig:hard-margin}).
 
 Lemma~\ref{lemma:feasible} is very useful in practice. It means that a
-ranking function $\hat r$ can be learned on comparison data by first
+ranking function $r$ can be learned on comparison data by first
 solving a standard binary SVM, and then transforming the solution. We
 use this result in the next section to build a general support vector
 algorithm for comparison data.
@@ -539,7 +539,7 @@ vectors $K_i,K_i'\in\RR^{2m}$ are defined as
 \end{equation}
 Letting $a=[\alpha^\intercal\
 \alpha'^\intercal]^\intercal\in\RR^{2m}$, the norm of the linear
-function in the feature space is $w^\intercal w = a^\intercal K a$,
+function in the feature space is $u^\intercal u = a^\intercal K a$,
 and we can write the primal soft-margin comparison QP for some
 $C\in\RR^+$ as
 \begin{equation}
@@ -581,7 +581,7 @@ as for the standard binary SVM. The resulting dual QP is
 \end{equation}
 which is equivalent to the dual problem of a standard binary SVM with
 kernel $\tilde K = M^\intercal K M\in\RR^{m\times m}$ and labels
-$\tilde y=\{-1,1\}^m$.
+$\tilde y\in\{-1,1\}^m$.
 
 
 \begin{algorithm}[b!]
@@ -667,10 +667,10 @@ learned comparison function remains the same (\ref{eq:compare_general}).
 The training procedure is summarized as
 Algorithm~\ref{alg:SVMcompare}. There are two sub-routines:
 \proc{KernelMatrix} computes the $2m\times 2m$ kernel matrix, and
-\proc{SVMdual} solves the SVM dual QP. There are two hyper-parameters
-to tune: the cost $C$ and the kernel $\kappa$. As with standard SVM
-for binary classification, these parameters can be tuned by minimizing
-the prediction error on a held-out validation set.
+\proc{SVMdual} solves the SVM dual QP (\ref{eq:svm-dual}). There are
+two hyper-parameters to tune: the cost $C$ and the kernel $\kappa$. As
+with standard SVM for binary classification, these parameters can be
+tuned by minimizing the prediction error on a held-out validation set.
 
 \begin{table}[b!]
   \centering
@@ -712,7 +712,7 @@ $y_i=t_1[r(x'_i)-r(x_i)+\epsilon_i]$, where $t_1$ is the threshold
 function (\ref{eq:threshold}), $r$ is the latent ranking function, and
 $\epsilon_i\sim N(0, 1/4)$ is noise. We picked train, validation, and
 test sets, each with $n/2$ equality pairs and $n/2$ inequality pairs,
-for $n\in\{50,\dots,300\}$. We fit a $10\times 10$ grid of models to
+for $n\in\{50,\dots,800\}$. We fit a $10\times 10$ grid of models to
 the training set (cost parameter $C=10^{-3},\dots,10^3$, Gaussian
 kernel width $2^{-7},\dots,2^4$), select the model with minimal
 zero-one loss on the validation set, and then use the test set to
@@ -729,10 +729,27 @@ especially in the case of the squared $\ell_1$ norm $r(x)=||x||_1^2$.
 
 In Figure~\ref{fig:simulation-samples} the test error of the proposed
 \SVMcompare\ model is clearly lower than that of the baseline SVMrank
-model. The only exception is when $r(x)=||x||^2_2$, the methods
-perform about the same.
+model, especially with more labeled pairs $n$. 
 
 %\subsection{Learning to rank data}
+
+\section{Conclusions and future work}
+\label{sec:conclusions}
+
+We discussed an extension of SVM to comparison problems. Our results
+highlighted the importance of directly modeling the equality pairs
+($y_i=0$), and it will be interesting to see if the same results are
+observed in learning to rank data sets. For scaling to very large data
+sets, it will be interesting to try algorithms based on smooth
+discriminative loss functions, such as stochastic gradient descent
+with a logistic loss.
+
+\textbf{Acknowledgements}: TDH was funded by KAKENHI 23120004, SS by a
+MEXT scholarship, and MS by KAKENHI 26700022. Thanks to Simon
+Lacoste-Julien and Hang Li for helpful discussions.
+
+\bibliographystyle{plain}
+\bibliography{refs}
 
 \begin{figure*}[b!]
   \centering
@@ -762,24 +779,6 @@ perform about the same.
     SVMcompare makes better predictions on the test data.}
   \label{fig:simulation-samples}
 \end{figure*}
-
-\section{Conclusions and future work}
-\label{sec:conclusions}
-
-We discussed an extension of SVM to comparison problems. Our results
-highlighted the importance of directly modeling the equality pairs
-($y_i=0$), and it will be interesting to see if the same results are
-observed in learning to rank data sets. For scaling to very large data
-sets, it will be interesting to try algorithms based on smooth
-discriminative loss functions, such as stochastic gradient descent
-with a logistic loss.
-
-\textbf{Acknowledgements}: TDH was funded by KAKENHI 23120004, SS by a
-MEXT scholarship, and MS by KAKENHI 26700022. Thanks to Simon
-Lacoste-Julien and Hang Li for helpful discussions.
-
-\bibliographystyle{plain}
-\bibliography{refs}
 
 \end{document}
 

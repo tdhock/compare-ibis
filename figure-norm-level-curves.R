@@ -93,7 +93,7 @@ p <- ggplot()+
   guides(colour=guide_legend(keyheight=3, order=1))
 print(p)
 
-tikz("figure-norm-level-curves.tex", h=5.7)
+tikz("figure-norm-level-curves.tex", h=5.2)
 print(p)
 dev.off()
 
