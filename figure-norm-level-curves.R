@@ -6,13 +6,16 @@ fun.levs <- c("training data", "rank", "rank2", "compare")
 model.colors <- c()
 eq.lab <- "equality\npair\n$y_i=0$"
 ineq.lab <- "inequality\npair\n$y_i\\in\\{-1,1\\}$"
-model.colors[[eq.lab]] <- "black"
-model.colors[[ineq.lab]] <- "red"
+model.colors[[eq.lab]] <- "#f8756e" #orange"black"
+model.colors[[ineq.lab]] <- "#00ba38" #green"red"
+yi.colors <- c("0"="#f8756e", #orange
+               "1"="#00ba38", #green
+               "-1"="#619cff")
 model.colors <- c(model.colors, {
   c(latent="grey",
-    rank="#f8766d",
-    rank2="green",
-    compare="#00bfc4") #bluish
+    rank="black",
+    rank2="black",
+    compare="black") #bluish
 })
 what.levs <- names(model.colors)
 
@@ -67,24 +70,27 @@ for(fun in plot.funs){
   toplot <- rbind(toplot, data.frame(these, fun))
 }
 toplot$what <- factor(toplot$what, what.levs)
+toplot$fun.type <- factor(ifelse(toplot$what=="latent", "latent", "learned"))
 p <- ggplot()+
   geom_segment(aes(X1, X2, xend=X1.1, yend=X2.1, color=what), data=seg.df)+
   geom_segment(aes(X1, X2, xend=X1.1, yend=X2.1, color=what), data=arrow.df,
-               arrow=arrow(type="closed",length=unit(0.025,"in")))+
-  geom_contour(aes(x1, x2, z=rank, colour=what, group=what),
-               data=toplot, size=1)+
+               arrow=arrow(type="closed",length=unit(0.04,"in")))+
+  geom_contour(aes(x1, x2, z=rank, alpha=fun.type, group=what),
+               data=toplot, size=1, colour="black")+
+  scale_alpha_manual("ranking\nfunction", values=c(latent=1/3,learned=1))+
   facet_grid(fun~label)+
   theme_bw()+
   theme(panel.margin=unit(0,"cm"))+
   coord_equal()+
-  scale_colour_manual("lines",values=model.colors, breaks=what.levs,
+  scale_colour_manual("label",values=model.colors, breaks=what.levs,
                       labels=c(eq.lab, ineq.lab, "latent $r$",
-                        "SVMrank\nignore $y_i=0$",
+                        ##"SVMrank\nignore $y_i=0$",
+                        "SVMrank\nmodel",
                         "SVMrank\ndouble $y_i=0$",
                         "SVMcompare\nmodel"))+
   xlab("feature 1")+
   ylab("feature 2")+
-  guides(colour=guide_legend(keyheight=3))
+  guides(colour=guide_legend(keyheight=3, order=1))
 print(p)
 
 tikz("figure-norm-level-curves.tex", h=5.7)

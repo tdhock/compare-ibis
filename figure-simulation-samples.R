@@ -74,7 +74,7 @@ leg <- "learned\nfunction"
 library(directlabels)
 boring <- ggplot(percents, aes(N, mean, group=fit.name))+
   geom_vline(xintercept=100,size=2)+
-  geom_ribbon(aes(ymin=mean-sd,ymax=mean+sd),alpha=1/2)+
+  geom_ribbon(aes(ymin=mean-sd,ymax=mean+sd),alpha=1/3)+
   geom_dl(aes(label=fit.name),method="last.qp")+
   geom_line(lwd=1.5)+
   ## Plot actual data:

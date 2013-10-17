@@ -52,6 +52,11 @@
 
 \begin{document}
 
+% \begin{ekeywords}
+%   support vector machine, quadratic program, linear program, ranking,
+%   margin, comparison
+% \end{ekeywords}
+
 \renewcommand{\arraystretch}{1.5}
 
 \definecolor{lightgray}{rgb}{0.9,0.9,0.9}
@@ -90,7 +95,7 @@
   if there is no significant difference. We cast the learning problem
   as a margin maximization, and show that it can be solved by
   converting it to a standard SVM. We compare our algorithm to SVMrank
-  using simulations and benchmark ranking data.
+  using simulated data.
 \end{abstract}
 
 \section{Introduction}
@@ -145,8 +150,8 @@ where $I$ is the indicator function.
 The rest of this article is organized as follows. In
 Section~\ref{sec:related} we discuss links with related work on
 classification and ranking, then in Section~\ref{sec:svm-compare} we
-propose a new algorithm: \SVMcompare. We show results on a benchmark
-dataset in Section~\ref{sec:results} and discuss future work in
+propose a new algorithm: \SVMcompare. We show results on simulated
+data in Section~\ref{sec:results} and discuss future work in
 Section~\ref{sec:conclusions}.
 
 \begin{table}[b!]
@@ -172,26 +177,25 @@ algorithms can be applied to the comparison problem.
 \subsection{Rank, reject, and rate}
 
 Comparison is similar to ranking and classification with a reject
-option (Table~\ref{tab:related}). 
-\citet{reject-option} studied the
-statistical properties of a hinge loss for an extension of SVM where
-$y\in\{-1,0,1\}$, and 0 signifies ``rejection'' or ``no guess,''
-calling this the ``classification with reject option'' problem.  There
-are many algorithms for the supervised learning to rank problem
-\citep{learning-to-rank}, which is similar to the supervised
-comparison problem we consider in this paper. The main idea of
-learning to rank is to train on labeled pairs of possible documents
-$x_i,x_i'$ for the same search query. The labels are $y_i\in\{-1,1\}$,
-where $y_i=1$ means document $x_i'$ is more relevant than $x_i$ and
-$y_i=-1$ means the opposite. \citet{ranksvm} proposed the SVMrank
-algorithm for this problem, and the algorithm we propose here is
-similar. The difference is that we also consider the case where both
-items/documents are judged to be equally good ($y_i=0$).
-\citet{rank-with-ties} called this the ``ranking with ties'' problem,
-proposed a boosting algorithm, and observed that modeling ties is more
-effective when there are more output values. \citet{trueskill}
-proposed TrueSkill, a generalization of the Elo chess rating system
-which can be applied to comparison data. 
+option (Table~\ref{tab:related}). The classification with reject
+option problem is a version of binary classification where outputs
+$y\in\{-1,0,1\}$, where 0 signifies ``rejection'' or ``no guess''
+\cite{reject-option}. There are many algorithms for the supervised
+learning to rank problem \citep{learning-to-rank}, which is similar to
+the supervised comparison problem we consider in this paper. The main
+idea of learning to rank is to train on labeled pairs of possible
+documents $x_i,x_i'$ for the same search query. The labels are
+$y_i\in\{-1,1\}$, where $y_i=1$ means document $x_i'$ is more relevant
+than $x_i$ and $y_i=-1$ means the opposite. The SVMrank algorithm was
+proposed for this problem \cite{ranksvm}, and the algorithm we propose
+here is similar. The difference is that we also consider the case
+where both items/documents are judged to be equally good ($y_i=0$).
+This has been called the ``ranking with ties'' problem
+\cite{rank-with-ties}, proposed a boosting algorithm, and observed
+that modeling ties is more effective when there are more output
+values. A Bayesian model which can be applied to these data is
+TrueSkill \cite{trueskill}, which a generalization of the Elo chess
+rating system.
 % Neither TrueSkill nor SVMrank
 % can predict ties ($y_i=0$), and \citet{rank-with-ties} did not respond
 % to a request for their code, which is what motivates us to propose a
@@ -236,7 +240,8 @@ $x_i,x_i'\in\RR^p$.
 \subsection{SVMrank for comparing}
 \label{sec:svmrank}
 In this section we explain how to apply the existing SVMrank algorithm
-of \citet{ranksvm} to a comparison data set.
+%of \citet{ranksvm} 
+to a comparison data set.
 
 The goal of the SVMrank algorithm is to learn a ranking function
 $r:\RR^p \rightarrow \RR$. When $r(x)=w^\intercal x$ is linear, the
@@ -429,14 +434,13 @@ that is feasible for the original max margin comparison LP
   w^\intercal x = \gamma u^\intercal x$, where $\gamma\in\RR$ is a
   scaling constant.  
   Then consider that for all $x$ on the decision
-  boundary, we have the following two equalities
+  boundary, we have
   \begin{equation}
     \label{eq:dec-boundary-rank}
     r(x) = \hat w^\intercal x = 1\text{ and } f(x)=u^\intercal x + \beta = 0.
   \end{equation}
   Taken together, it is clear that $\gamma=-1/\beta$ and thus $\hat w
-  = -u/\beta$. Consider for all $x$ on the margin we have the
-  following two inequalities
+  = -u/\beta$. Consider for all $x$ on the margin we have 
   \begin{equation}
     \label{eq:margin-rank}
     r(x) = \hat w^\intercal x = 1+\hat\mu\text{ and } f(x)=u^\intercal x + \beta= 1.
@@ -453,9 +457,10 @@ that is feasible for the original max margin comparison LP
     &&\hskip -0.5cm
 \nonumber \beta + u^\intercal(x_i'-x_i)y_i \geq 1,\ \forall\ i\in I_1\cup I_{-1}.
 \end{eqnarray}
-By plugging in $\hat \mu,\hat w$ into the constraints of
-(\ref{eq:max-margin-qp}), it is clear that $\hat \mu, \hat w$ are
-feasible for the max margin comparison LP (\ref{eq:max-margin-lp}).
+By re-writing the constraints of (\ref{eq:max-margin-qp}) in terms of
+$\hat \mu,\hat w$, we recover the same constraints as the max margin
+comparison LP (\ref{eq:max-margin-lp}). Thus $\hat \mu, \hat w$ are
+feasible for (\ref{eq:max-margin-lp}).
 \end{proof}
 
 One may also wonder: are $\hat \mu,\hat w$ optimal for the max margin
@@ -464,14 +469,14 @@ counterexample in the middle panel of
 Figure~\ref{fig:hard-margin}. This is because the LP defines the
 margin in terms of ranking function values, but the QP defines the
 margin in terms of $||u||$, which depends on the scale of the inputs
-$x,x'$. However, when the input variables are on the same scale, we
-have observed that the solutions to the LP and QP are equivalent
-(right panel of Figure~\ref{fig:hard-margin}).
+$x,x'$. However, when the input variables are scaled in a
+pre-processing step, we have observed that the solutions to the LP and
+QP are equivalent (right panel of Figure~\ref{fig:hard-margin}).
 
 Lemma~\ref{lemma:feasible} is very useful in practice. It means that a
 ranking function $\hat r$ can be learned on comparison data by first
 solving a standard binary SVM, and then transforming the solution. We
-use this reult in the next section to build a general support vector
+use this result in the next section to build a general support vector
 algorithm for comparison data.
 
 \subsection{Kernelized QP for non-separable data}
@@ -635,7 +640,7 @@ $\tilde y=\{-1,1\}^m$.
 
 So we can solve the dual comparison problem (\ref{eq:svm-dual}) using
 any efficient SVM solver, such as libsvm \citep{libsvm}. We used the R
-interface in the \texttt{kernlab} package of \citet{kernlab}, and our
+interface in the \texttt{kernlab} package \cite{kernlab}, and our
 code is available in the \texttt{tdhock/rankSVMcompare} package on Github.
 
 After obtaining optimal dual variables $v\in\RR^m$ as the solution of
@@ -736,8 +741,8 @@ perform about the same.
   \caption{Application to simulated patterns $x,x'\in\RR^2$, where the
     ranking functions $r(x)=||x||^2$ are squared norms (panels from
     left to right). \textbf{Top}: the training data are $n=100$ pairs,
-    half equality (black segments indicate two points of equal rank),
-    and half inequality (red arrows point to the higher
+    half equality (segments indicate two points of equal rank),
+    and half inequality (arrows point to the higher
     rank). \textbf{Middle and bottom}: level curves of the ranking
     functions learned by SVMrank and SVMcompare. SVMrank ignores the
     equality pairs, so in general SVMcompare recovers the latent
@@ -773,7 +778,7 @@ with a logistic loss.
 MEXT scholarship, and MS by KAKENHI 26700022. Thanks to Simon
 Lacoste-Julien and Hang Li for helpful discussions.
 
-\bibliographystyle{abbrvnat}
+\bibliographystyle{plain}
 \bibliography{refs}
 
 \end{document}

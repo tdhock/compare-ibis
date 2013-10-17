@@ -184,6 +184,7 @@ for(set.name in c("both","scaled")){
 plotted.points <- rbind(model.points, model.sv)
 qp <- data.frame(x=200,y=3,label="QP",set.name="both")
 lp <- data.frame(x=-200,y=0,label="LP",set.name="both")
+lab.df <- data.frame()
 mplot <- ggplot()+
   geom_abline(aes(slope=slope,intercept=intercept,linetype=line),
               data=model.lines, size=1, color=lp.color)+
@@ -217,8 +218,9 @@ mplot <- ggplot()+
   ##geom_point(aes(distance, angle), data=model.sv, size=1, pch=1)+
   theme(panel.margin=unit(0,"cm"))+
   xlab("difference feature 1")+
-  ylab("difference feature 2")
-
+  ylab("difference feature 2")+
+  guides(colour="none")
+print(mplot)
 tikz("figure-hard-margin.tex",h=2.8)
 print(mplot)
 dev.off()
